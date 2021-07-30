@@ -5,56 +5,82 @@ const range = document.getElementById("jsRange");
 const mode = document.getElementById("jsMode");
 const saveBtn = document.getElementById("jsSave");
 const clear = document.getElementById("jsClear");
+const resizeDiv = document.getElementsByClassName("resize");
+const resizeBtn = document.getElementsByClassName("sizeBtn");
+let leftBtn = document.getElementById("leftBtn");
+let rightBtn = document.getElementById("rightBtn");
 
 const DEFAULT_COLOR = "#2c2c2c";
 const CANVAS_SIZE = 700;
 
-canvas.width = CANVAS_SIZE;
-canvas.height = CANVAS_SIZE;
-
-ctx.fillStyle = "white";
-ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+//캔버스 색, 채우기색, 브러쉬 사이즈 기본값들
 ctx.strokeStyle = DEFAULT_COLOR;
 ctx.fillStyle = DEFAULT_COLOR;
 ctx.lineWidth = 2.5;
 
+// 컬러, 사이즈 변수 할당
+let nowColor = DEFAULT_COLOR;
+let canvasResize = CANVAS_SIZE;
+
+// 아래 기본값 false로 주고 함수들 실행
 let painting = false;
 let filling = false;
-let nowcolor = "";
+let mouseIn = false;
 
+canvas.width = canvasResize;
+canvas.height = CANVAS_SIZE;
+
+//그리기 스탑
 function stopPainting() {
     painting = false;
 }
 
+//그리기 시작, 채우기 false검사 필수(안하면 채우기상황에서 드래그 할때 선 생김)
 function startPainting() {
     if(!filling) {
     painting = true;
-    }  
+    }
 }
 
+//마우스 x,y값 받고 클릭하면 그리기 시작. painting과 mouseIn같이 검사해야지 마우스 들락날락 그리기 가능
 function onMouseMove(event) {
     const x = event.offsetX;
     const y = event.offsetY;
     if(!painting){
         ctx.beginPath();
         ctx.moveTo(x, y);
-    } else {
+    } else if(painting && mouseIn){
         ctx.lineTo(x, y);
         ctx.stroke();
     }
 }
 
-function handleColorClick(event) {
-    nowcolor = event.target.style.backgroundColor;
-    ctx.strokeStyle = nowcolor;
-    ctx.fillStyle = nowcolor;
+//마우스 캔버스에서 떠났을때 패쓰 종료
+function onMouseLeave() {
+    mouseIn = false;
+    ctx.closePath();
 }
 
+//마우스 캔버스에 들어왔을때 패스 시작
+function onMouseEnter() {
+    mouseIn = true;
+    ctx.beginPath();
+}
+
+//컬러 고르기
+function handleColorClick(event) {
+    nowColor = event.target.style.backgroundColor;
+    ctx.strokeStyle = nowColor;
+    ctx.fillStyle = nowColor;
+}
+
+//브러쉬 사이즈 바꾸기
 function handleRangeChange(event) {
     const brushSize = event.target.value;
     ctx.lineWidth = brushSize;
 }
 
+//FILL 버튼 눌렀을때
 function handleModeClick() {
     if(filling === true){
         filling = false;
@@ -65,16 +91,20 @@ function handleModeClick() {
     }
 }
 
+//캔버스 클릭했을때(fillstyle nowcolor로 먼저 선언하지 않으면 black이 디폴트색임. 이유는 모름)
 function handleCanvasClick() {
+    ctx.fillStyle = nowColor;
     if(filling){
-        ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        ctx.fillRect(0, 0, canvasResize, canvasResize);
     }
 }
 
+//우클릭 방지
 function handleCM(event) {
     event.preventDefault();
 }
 
+//SAVE 버튼 눌렀을때 이미지 저장.
 function handleSaveClick() {
     const image = canvas.toDataURL("image/png");
     const link = document.createElement("a");
@@ -83,24 +113,91 @@ function handleSaveClick() {
     link.click();
 }
 
+//CLEAR 버튼. 거대한 흰색 사각형으로 캔버스를 채움.
 function handleClearClick() {
     ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    ctx.fillStyle = nowcolor;
+    ctx.fillRect(0, 0, canvasResize, canvasResize);
+    ctx.fillStyle = nowColor;
 }
 
+//캔버스 크기 조절. 캔버스는 리사이즈 할때 기본적으로 그림이 다 날아감.
+//getImageData로 캔버스 그림 변수에 할당시키고, 리사이즈 하고나서 putImageData로 불러옴.
+//좌표값도 중요함. x=0, y=0이 좌측최상단이기 때문에 
+//저장이나 로드는 y좌표는 0으로 둔 채, x좌표만 계산하면 됨.
+//사이즈 키울때 x좌표 : (큰 사이즈-작은 사이즈)/2
+//사이즈 줄일때 x좌표 : -(큰 사이즈-작은 사이즈)/2
+
+function handleResizeClick() {
+    if(canvasResize !== 1600) {
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        canvasResize = 1600;
+        canvas.style.width = "1600px";
+        canvas.width = canvasResize;
+        ctx.fillStyle = nowColor;
+        ctx.strokeStyle = nowColor;
+        ctx.putImageData(imageData, 450, 0);
+    } else { 
+        imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        canvasResize = CANVAS_SIZE;
+        canvas.style.width = "700px";
+        canvas.width = canvasResize;
+        ctx.fillStyle = nowColor;
+        ctx.strokeStyle = nowColor;
+        ctx.putImageData(imageData, -450, 0);
+    }
+    btnChange(); 
+}
+
+//버튼 감췄다 나타내기. a클래스 불러와서 b클래스 toggle하려 해도 안 먹힘.
+//클래스는 무조건 foreach만 가능한듯
+function revealSizingBtn() {
+    Array.from(resizeBtn).forEach(clas =>
+    clas.classList.remove("hidden"));
+}
+
+function hideSizingBtn() {
+    Array.from(resizeBtn).forEach(clas =>
+    clas.classList.add("hidden"));
+}
+
+//버튼 모양 바꾸기.
+//처음에 변수 leftBtn을 document.getElementById("leftBtn").innerText로 할당했었음.
+//그랬더니 문자열 바꾸는 게 안먹힘. 이것도 이유를 모르겠다.
+//img로 하는게 편할것 같지만 용량차지를 무시못함.
+function btnChange() {
+    if(leftBtn.innerText === "◀" && rightBtn.innerText === "▶"){
+        leftBtn.innerText = "▶";
+        rightBtn.innerText ="◀";
+    } else {
+        leftBtn.innerText = "◀";
+        rightBtn.innerText ="▶";
+    }
+}
+
+//캔버스 이벤트 리스너들.
 if(canvas) {
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mousedown", startPainting);
     canvas.addEventListener("mouseup", stopPainting);
-    canvas.addEventListener("mouseleave", stopPainting);
+    canvas.addEventListener("mouseleave", onMouseLeave);
+    canvas.addEventListener("mouseenter", onMouseEnter);
     canvas.addEventListener("click", handleCanvasClick);
     canvas.addEventListener("contextmenu", handleCM);
 }
 
+
 Array.from(colors).forEach(color => 
     color.addEventListener("click", handleColorClick));
 
+Array.from(resizeBtn).forEach(btn => 
+    btn.addEventListener("click", handleResizeClick));
+
+Array.from(resizeDiv).forEach(div => 
+    div.addEventListener("mouseenter", revealSizingBtn));
+
+Array.from(resizeDiv).forEach(div => 
+    div.addEventListener("mouseleave", hideSizingBtn));
+    
 if(range) {
     range.addEventListener("input", handleRangeChange);
 }
@@ -116,5 +213,3 @@ if(saveBtn) {
 if(clear) {
     clear.addEventListener("click", handleClearClick);
 }
-
-console.log(ctx.fillStyle);

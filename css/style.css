@@ -8,12 +8,44 @@ body {
     padding: 20px 0px;
 }
 
+.hidden {
+    display: none;
+}
+
+button {
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: center;
+    border: none;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.39);
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+}
+
 .canvas {
     width: 700px;
     height: 700px;
     background-color: white;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.main_top {
+    display: flex;
+    height: 701px;
+    width: 100%;
+    justify-content: center;
+}
+
+.side {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 9%;
 }
 
 .controls {
