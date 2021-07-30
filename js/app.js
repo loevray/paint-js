@@ -9,6 +9,7 @@ const resizeDiv = document.getElementsByClassName("resize");
 const resizeBtn = document.getElementsByClassName("sizeBtn");
 let leftBtn = document.getElementById("leftBtn");
 let rightBtn = document.getElementById("rightBtn");
+const body = document.body;
 
 const DEFAULT_COLOR = "#2c2c2c";
 const CANVAS_SIZE = 700;
@@ -39,6 +40,13 @@ function stopPainting() {
 function startPainting() {
     if(!filling) {
     painting = true;
+    }
+}
+
+function onMouseDown(event) {
+    if(event) {
+    startPainting();
+    } else { stopPainting();
     }
 }
 
@@ -165,7 +173,6 @@ function hideSizingBtn() {
 //그랬더니 문자열 바꾸는 게 안먹힘. 이것도 이유를 모르겠다.
 //img로 하는게 편할것 같지만 용량차지를 무시못함.
 function btnChange() {
-    painting = false;
     if(leftBtn.innerText === "◀" && rightBtn.innerText === "▶"){
         leftBtn.innerText = "▶";
         rightBtn.innerText ="◀";
@@ -178,14 +185,14 @@ function btnChange() {
 //캔버스 이벤트 리스너들.
 if(canvas) {
     canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mousedown", startPainting);
+    canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mouseup", stopPainting);
     canvas.addEventListener("mouseleave", onMouseLeave);
     canvas.addEventListener("mouseenter", onMouseEnter);
     canvas.addEventListener("click", handleCanvasClick);
     canvas.addEventListener("contextmenu", handleCM);
+    body.addEventListener("mouseup", stopPainting);
 }
-
 
 Array.from(colors).forEach(color => 
     color.addEventListener("click", handleColorClick));
