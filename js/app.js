@@ -165,6 +165,7 @@ function hideSizingBtn() {
 //그랬더니 문자열 바꾸는 게 안먹힘. 이것도 이유를 모르겠다.
 //img로 하는게 편할것 같지만 용량차지를 무시못함.
 function btnChange() {
+    painting = false;
     if(leftBtn.innerText === "◀" && rightBtn.innerText === "▶"){
         leftBtn.innerText = "▶";
         rightBtn.innerText ="◀";
