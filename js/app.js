@@ -10,6 +10,7 @@ const resizeBtn = document.getElementsByClassName("sizeBtn");
 let leftBtn = document.getElementById("leftBtn");
 let rightBtn = document.getElementById("rightBtn");
 const body = document.body;
+const diva = document.getElementsByClassName("main_top");
 
 const DEFAULT_COLOR = "#2c2c2c";
 const CANVAS_SIZE = 700;
@@ -40,13 +41,6 @@ function stopPainting() {
 function startPainting() {
     if(!filling) {
     painting = true;
-    }
-}
-
-function onMouseDown(event) {
-    if(event) {
-    startPainting();
-    } else { stopPainting();
     }
 }
 
@@ -183,16 +177,17 @@ function btnChange() {
 }
 
 //캔버스 이벤트 리스너들.
-if(canvas) {
+//캔버스 밖에서 mouseup 감지 안하면 나가서 mousedown풀어도 그림이 유지가됨.
+//머리 아픔.
     canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("mousedown", startPainting);
     canvas.addEventListener("mouseup", stopPainting);
     canvas.addEventListener("mouseleave", onMouseLeave);
     canvas.addEventListener("mouseenter", onMouseEnter);
     canvas.addEventListener("click", handleCanvasClick);
     canvas.addEventListener("contextmenu", handleCM);
     body.addEventListener("mouseup", stopPainting);
-}
+
 
 Array.from(colors).forEach(color => 
     color.addEventListener("click", handleColorClick));
