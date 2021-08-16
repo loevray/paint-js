@@ -9,8 +9,6 @@ const resizeDiv = document.getElementsByClassName("resize");
 const resizeBtn = document.getElementsByClassName("sizeBtn");
 let leftBtn = document.getElementById("leftBtn");
 let rightBtn = document.getElementById("rightBtn");
-const body = document.body;
-const diva = document.getElementsByClassName("main_top");
 
 const DEFAULT_COLOR = "#2c2c2c";
 const CANVAS_SIZE = 700;
@@ -178,7 +176,7 @@ function btnChange() {
 
 //캔버스 이벤트 리스너들.
 //캔버스 밖에서 mouseup 감지 안하면 나가서 mousedown풀어도 그림이 유지가됨.
-//머리 아픔.
+//머리 아픔. 다음날도 실패.
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mousedown", startPainting);
     canvas.addEventListener("mouseup", stopPainting);
@@ -186,7 +184,6 @@ function btnChange() {
     canvas.addEventListener("mouseenter", onMouseEnter);
     canvas.addEventListener("click", handleCanvasClick);
     canvas.addEventListener("contextmenu", handleCM);
-    body.addEventListener("mouseup", stopPainting);
 
 
 Array.from(colors).forEach(color => 
