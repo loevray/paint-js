@@ -27,46 +27,61 @@ let canvasResize = CANVAS_SIZE;
 // 아래 기본값 false로 주고 함수들 실행
 let painting = false;
 let filling = false;
-let mouseIn = false;
 
 canvas.width = canvasResize;
 canvas.height = CANVAS_SIZE;
 
+const BUTTON = 0b01;
+const mouseButtonIsDown = buttons => (BUTTON & buttons) === BUTTON;
+
+let latestPoint;
+
 //그리기 스탑
-function stopPainting() {
+function endStroke(evt) {
+    if (!painting) {
+        return;
+    }
     painting = false;
+    evt.currentTarget.removeEventListener("mousemove", mouseMove);
+};
+
+function mouseDown(evt) {
+    if(painting) {
+        return;
+    }
+    evt.preventDefault();
+    canvas.addEventListener("mousemove", mouseMove);
+    startStroke([evt.offsetX, evt.offsetY]);
 }
 
-//그리기 시작, 채우기 false검사 필수(안하면 채우기상황에서 드래그 할때 선 생김)
-function startPainting() {
-    if(!filling) {
+
+const mouseMove = evt => {
+    if (!painting) {
+        return;
+    }
+    continueStroke([evt.offsetX, evt.offsetY]);
+};
+
+const continueStroke = newPoint => {
+    ctx.beginPath();
+    ctx.moveTo(latestPoint[0], latestPoint[1]);
+    ctx.lineTo(newPoint[0], newPoint[1]);
+    ctx.stroke();
+    latestPoint = newPoint;
+};
+
+const startStroke = point => {
     painting = true;
-    }
-}
+    latestPoint = point;
+};
 
-//마우스 x,y값 받고 클릭하면 그리기 시작. painting과 mouseIn같이 검사해야지 마우스 들락날락 그리기 가능
-function onMouseMove(event) {
-    const x = event.offsetX;
-    const y = event.offsetY;
-    if(!painting){
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    } else if(painting && mouseIn){
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }
-}
-
-//마우스 캔버스에서 떠났을때 패쓰 종료
-function onMouseLeave() {
-    mouseIn = false;
-    ctx.closePath();
-}
 
 //마우스 캔버스에 들어왔을때 패스 시작
-function onMouseEnter() {
-    mouseIn = true;
-    ctx.beginPath();
+function onMouseEnter(evt) {
+    if (!mouseButtonIsDown(evt.buttons) || painting) {
+        return;
+    }
+    mouseDown(evt);
 }
 
 //컬러 고르기
@@ -179,14 +194,13 @@ function btnChange() {
 //캔버스 이벤트 리스너들.
 //캔버스 밖에서 mouseup 감지 안하면 나가서 mousedown풀어도 그림이 유지가됨.
 //머리 아픔.
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mousedown", startPainting);
-    canvas.addEventListener("mouseup", stopPainting);
-    canvas.addEventListener("mouseleave", onMouseLeave);
-    canvas.addEventListener("mouseenter", onMouseEnter);
-    canvas.addEventListener("click", handleCanvasClick);
+    canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mouseup", endStroke, false);
+    canvas.addEventListener("mouseout", endStroke, false);
+    canvas.addEventListener("mouseenter", onMouseEnter, false);
+
+    // canvas.addEventListener("click", handleCanvasClick);
     canvas.addEventListener("contextmenu", handleCM);
-    body.addEventListener("mouseup", stopPainting);
 
 
 Array.from(colors).forEach(color => 
