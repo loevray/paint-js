@@ -34,7 +34,7 @@ canvas.height = CANVAS_SIZE;
 const BUTTON = 0b01;
 const mouseButtonIsDown = buttons => (BUTTON & buttons) === BUTTON;
 
-let latestPoint;
+let paintData = [];
 
 //그리기 스탑
 function endStroke(evt) {
@@ -54,7 +54,6 @@ function mouseDown(evt) {
     startStroke([evt.offsetX, evt.offsetY]);
 }
 
-
 const mouseMove = evt => {
     if (!painting) {
         return;
@@ -68,13 +67,13 @@ const continueStroke = newPoint => {
     ctx.lineTo(newPoint[0], newPoint[1]);
     ctx.stroke();
     latestPoint = newPoint;
+    console.log(latestPoint, newPoint);
 };
 
 const startStroke = point => {
     painting = true;
     latestPoint = point;
 };
-
 
 //마우스 캔버스에 들어왔을때 패스 시작
 function onMouseEnter(evt) {
